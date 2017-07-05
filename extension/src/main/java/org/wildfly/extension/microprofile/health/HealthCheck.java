@@ -38,15 +38,24 @@ public class HealthCheck {
 
    private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("eclipse", "microprofile", "health", "checks");
 
+
    public static void install(OperationContext context, String name, HealthCheckProcedure procedure) {
+      install(context, ServiceName.of(name), procedure);
+   }
+
+   public static void install(OperationContext context, ServiceName suffix, HealthCheckProcedure procedure) {
       HealthCheckService service = new HealthCheckService(procedure);
-      context.getServiceTarget().addService(BASE_SERVICE_NAME.append(name), service)
+      context.getServiceTarget().addService(BASE_SERVICE_NAME.append(suffix), service)
               .addDependency(HealthMonitorService.SERVICE_NAME, HealthMonitor.class, service.healthMonitor)
               .install();
    }
 
    public static void uninstall(OperationContext context, String name) {
-      context.removeService(BASE_SERVICE_NAME.append(name));
+      uninstall(context, ServiceName.of(name));
+   }
+
+   public static void uninstall(OperationContext context, ServiceName suffix) {
+      context.removeService(BASE_SERVICE_NAME.append(suffix));
    }
 
    private static class HealthCheckService implements Service<HealthCheckProcedure> {

@@ -15,6 +15,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.microprofile.health.deployment.DependencyProcessor;
 import org.wildfly.extension.microprofile.health.deployment.SubsystemDeploymentProcessor;
 
