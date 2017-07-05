@@ -37,6 +37,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
@@ -73,7 +74,10 @@ public class CheckOperation implements OperationStepHandler {
 
    @Override
    public void execute(OperationContext operationContext, ModelNode modelNode) throws OperationFailedException {
-      Collection<HealthStatus> statuses = HealthMonitor.INSTANCE.check();
+      ServiceController<?> healthMonitorService = operationContext.getServiceRegistry(false).getRequiredService(HealthMonitorService.SERVICE_NAME);
+      HealthMonitor healthMonitor = HealthMonitor.class.cast(healthMonitorService.getValue());
+
+      Collection<HealthStatus> statuses = healthMonitor.check();
       ModelNode result = computeResult(statuses);
       operationContext.getResult().set(result);
    }

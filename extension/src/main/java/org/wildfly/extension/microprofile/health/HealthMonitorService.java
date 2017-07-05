@@ -22,53 +22,40 @@
 
 package org.wildfly.extension.microprofile.health;
 
-import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-public class HealthHttpHandlerService implements Service<HealthHttpHandler> {
+public class HealthMonitorService implements Service<HealthMonitor> {
 
-   private final String prefixPath;
-   private final InjectedValue<PathHandler> pathHandler = new InjectedValue<>();
-   private final InjectedValue<HealthMonitor> healthMonitor = new InjectedValue<>();
-   private HealthHttpHandler handler;
+   public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("eclipse", "microprofile", "health", "monitor");
 
-   public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("eclipse", "microprofile", "health", "http-handler");
-   private static final String UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
+   private HealthMonitor monitor;
 
-   static void install(OperationContext context, String prefixPath) {
-      HealthHttpHandlerService service = new HealthHttpHandlerService(prefixPath);
+   static void install(OperationContext context) {
+      HealthMonitorService service = new HealthMonitorService();
       context.getServiceTarget().addService(SERVICE_NAME, service)
-              .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, service.pathHandler)
-              .addDependency(HealthMonitorService.SERVICE_NAME, HealthMonitor.class, service.healthMonitor)
               .install();
    }
 
-   public HealthHttpHandlerService(String prefixPath) {
-      this.prefixPath = prefixPath;
+   @Override
+   public void start(StartContext startContext) throws StartException {
+      monitor = new HealthMonitor();
    }
 
    @Override
-   public void start(StartContext context) throws StartException {
-      handler = new HealthHttpHandler(healthMonitor.getValue());
-      pathHandler.getValue().addPrefixPath(prefixPath, handler);
+   public void stop(StopContext stopContext) {
+      monitor = null;
    }
 
    @Override
-   public void stop(StopContext context) {
-      pathHandler.getValue().removePrefixPath(prefixPath);
-   }
-
-   @Override
-   public HealthHttpHandler getValue() throws IllegalStateException, IllegalArgumentException {
-      return handler;
+   public HealthMonitor getValue() throws IllegalStateException, IllegalArgumentException {
+      return monitor;
    }
 }

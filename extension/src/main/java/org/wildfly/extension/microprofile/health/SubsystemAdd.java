@@ -30,6 +30,8 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         MicroProfileHealthLogger.ROOT_LOGGER.activatingSubsystem();
 
+        HealthMonitorService.install(context);
+
         ModelNode httpEndpoint = SubsystemDefinition.HTTP_ENDPOINT.resolveModelAttribute(context, model);
         if (httpEndpoint.isDefined()) {
             HealthHttpHandlerService.install(context, httpEndpoint.asString());

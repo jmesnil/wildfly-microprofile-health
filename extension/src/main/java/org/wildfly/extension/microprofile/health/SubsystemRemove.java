@@ -21,6 +21,8 @@ class SubsystemRemove extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         context.removeService(HealthHttpHandlerService.SERVICE_NAME);
+
+        context.removeService(HealthMonitorService.SERVICE_NAME);
     }
 
 

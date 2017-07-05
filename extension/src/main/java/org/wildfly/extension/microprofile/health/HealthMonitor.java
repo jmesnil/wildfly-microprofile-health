@@ -32,8 +32,6 @@ import org.eclipse.microprofile.health.HealthStatus;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 public class HealthMonitor {
-   public static HealthMonitor INSTANCE = new HealthMonitor();
-
    final Collection<HealthCheckProcedure> procedures = new HashSet<>();
 
    public void addHealthChechProcedure(HealthCheckProcedure procedure) {

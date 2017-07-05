@@ -33,12 +33,10 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.resource.spi.ConfigProperty;
 
 import org.eclipse.microprofile.health.HealthCheckProcedure;
-import org.eclipse.microprofile.health.HealthStatus;
 import org.wildfly.extension.microprofile.health.HealthMonitor;
 
 /**
@@ -46,7 +44,12 @@ import org.wildfly.extension.microprofile.health.HealthMonitor;
  */
 public class CDIExtension implements Extension {
 
+   private final HealthMonitor healthMonitor;
    private List<AnnotatedType> delegates = new ArrayList<>();
+
+   public CDIExtension(HealthMonitor healthMonitor) {
+      this.healthMonitor = healthMonitor;
+   }
 
    public <T> void observeResources(@Observes ProcessAnnotatedType<T> event) {
 
@@ -58,7 +61,6 @@ public class CDIExtension implements Extension {
             delegates.add(annotatedType);
          }
       }
-      InjectionPoint ip = null;
    }
 
    @ConfigProperty
@@ -72,7 +74,7 @@ public class CDIExtension implements Extension {
                HealthCheckProcedure healthCheckProcedure = HealthCheckProcedure.class.cast(bean);
                System.out.println(">> Added health bean impl " + bean);
                // TODO remove the health check procedure when the deployment is undeployed
-               HealthMonitor.INSTANCE.addHealthChechProcedure(healthCheckProcedure);
+               healthMonitor.addHealthChechProcedure(healthCheckProcedure);
             }
          }
 

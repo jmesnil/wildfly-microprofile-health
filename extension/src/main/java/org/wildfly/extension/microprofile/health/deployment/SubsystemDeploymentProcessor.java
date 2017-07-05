@@ -10,6 +10,9 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceController;
+import org.wildfly.extension.microprofile.health.HealthMonitor;
+import org.wildfly.extension.microprofile.health.HealthMonitorService;
 
 /**
  */
@@ -31,12 +34,12 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        System.out.println("SubsystemDeploymentProcessor.deploy");
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            System.out.println("SubsystemDeploymentProcessor.deploy WELD");
             WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit);
-            extensions.registerExtensionInstance(new CDIExtension(), deploymentUnit);
+            ServiceController<?> healthMonitorService = phaseContext.getServiceRegistry().getRequiredService(HealthMonitorService.SERVICE_NAME);
+            HealthMonitor healthMonitor = HealthMonitor.class.cast(healthMonitorService.getValue());
+            extensions.registerExtensionInstance(new CDIExtension(healthMonitor), deploymentUnit);
         }
     }
 
