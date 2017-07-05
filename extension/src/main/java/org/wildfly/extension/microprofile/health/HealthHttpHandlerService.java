@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.microprofile.health;
 
-import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -30,41 +29,42 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 public class HealthHttpHandlerService implements Service<HealthHttpHandler> {
 
-   private final String prefixPath;
-   private final InjectedValue<PathHandler> pathHandler = new InjectedValue<>();
+   private final String path;
+   private final InjectedValue<Host> host = new InjectedValue<>();
    private final InjectedValue<HealthMonitor> healthMonitor = new InjectedValue<>();
    private HealthHttpHandler handler;
 
    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("eclipse", "microprofile", "health", "http-handler");
-   private static final String UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
 
-   static void install(OperationContext context, String prefixPath) {
-      HealthHttpHandlerService service = new HealthHttpHandlerService(prefixPath);
+   static void install(OperationContext context, String serverName, String vhostName, String path) {
+      HealthHttpHandlerService service = new HealthHttpHandlerService(path);
       context.getServiceTarget().addService(SERVICE_NAME, service)
-              .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, service.pathHandler)
+              .addDependency(UndertowService.virtualHostName(serverName, vhostName), Host.class, service.host)
               .addDependency(HealthMonitorService.SERVICE_NAME, HealthMonitor.class, service.healthMonitor)
               .install();
    }
 
-   public HealthHttpHandlerService(String prefixPath) {
-      this.prefixPath = prefixPath;
+   public HealthHttpHandlerService(String path) {
+      this.path = path;
    }
 
    @Override
    public void start(StartContext context) throws StartException {
       handler = new HealthHttpHandler(healthMonitor.getValue());
-      pathHandler.getValue().addPrefixPath(prefixPath, handler);
+      host.getValue().registerHandler(path, handler);
    }
 
    @Override
    public void stop(StopContext context) {
-      pathHandler.getValue().removePrefixPath(prefixPath);
+      host.getValue().unregisterHandler("/health");
    }
 
    @Override

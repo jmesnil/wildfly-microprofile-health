@@ -3,5 +3,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <extension-module>org.wildfly.extension.microprofile.health</extension-module>
-    <subsystem xmlns="urn:wildfly:microprofile-health:1.0" http-endpoint="/health" />
+    <subsystem xmlns="urn:wildfly:microprofile-health:1.0">
+        <http path="/health" />
+    </subsystem>
 </config>

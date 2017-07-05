@@ -1,5 +1,9 @@
 package org.wildfly.extension.microprofile.health;
 
+import static org.wildfly.extension.microprofile.health.SubsystemDefinition.HTTP_PATH;
+import static org.wildfly.extension.microprofile.health.SubsystemDefinition.HTTP_SERVER;
+import static org.wildfly.extension.microprofile.health.SubsystemDefinition.HTTP_VIRTUAL_HOST;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 
@@ -37,9 +41,11 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         HealthMonitorService.install(context);
 
-        ModelNode httpEndpoint = SubsystemDefinition.HTTP_ENDPOINT.resolveModelAttribute(context, model);
-        if (httpEndpoint.isDefined()) {
-            HealthHttpHandlerService.install(context, httpEndpoint.asString());
+        String serverName = HTTP_SERVER.resolveModelAttribute(context, model).asString();
+        String vHostName =  HTTP_VIRTUAL_HOST.resolveModelAttribute(context, model).asString();
+        ModelNode path = HTTP_PATH.resolveModelAttribute(context, model);
+        if (path.isDefined()) {
+            HealthHttpHandlerService.install(context, serverName, vHostName, path.asString());
         }
 
         HealthCheck.install(context, "heap-memory", () -> {

@@ -41,8 +41,10 @@ public class SubsytemParser_1_0  extends PersistentResourceXMLParser {
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
-        xmlDescription = builder(new SubsystemDefinition(), NAMESPACE)
-                .addAttribute(SubsystemDefinition.HTTP_ENDPOINT)
+        xmlDescription = builder(SubsystemExtension.SUBSYSTEM_PATH, NAMESPACE)
+                .addAttributes(SubsystemDefinition.HTTP_SERVER,
+                        SubsystemDefinition.HTTP_VIRTUAL_HOST,
+                        SubsystemDefinition.HTTP_PATH)
                 .build();
     }
 
