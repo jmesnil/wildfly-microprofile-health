@@ -104,6 +104,9 @@ You go again to [http://localhost:8080/health/](http://localhost:8080/health/), 
 }
 ```
 
+Note that when the overall outcome is down, the HTTP returns a `503 Service Unavailable` status code along with the JSON payload.
+If the overall outome is down, the returned status code in in the 20x range.
+
 # Links
 
 * [WildFly][wildfly]

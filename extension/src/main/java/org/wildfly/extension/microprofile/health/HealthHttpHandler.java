@@ -49,7 +49,9 @@ public class HealthHttpHandler implements HttpHandler {
       ModelNode result = CheckOperation.computeResult(statuses);
       System.out.println("result = " + result.toJSONString(false));
       exchange.getResponseHeaders().add(Headers.CONTENT_TYPE, "application/json");
-      exchange.getResponseSender().send(result.toJSONString(true));
+      boolean ok = result.get("outcome").asString() == "UP";
+      exchange.setStatusCode(ok ? 200 : 503)
+              .getResponseSender().send(result.toJSONString(true));
    }
 
 }
