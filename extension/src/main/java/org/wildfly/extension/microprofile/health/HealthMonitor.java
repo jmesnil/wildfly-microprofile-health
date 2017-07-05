@@ -34,8 +34,12 @@ import org.eclipse.microprofile.health.HealthStatus;
 public class HealthMonitor {
    final Collection<HealthCheckProcedure> procedures = new HashSet<>();
 
-   public void addHealthChechProcedure(HealthCheckProcedure procedure) {
+   public void addHealthCheckProcedure(HealthCheckProcedure procedure) {
       procedures.add(procedure);
+   }
+
+   public void removeHealthCheckProcedure(HealthCheckProcedure procedure) {
+      procedures.remove(procedure);
    }
 
    Collection<HealthStatus> check() {
@@ -46,4 +50,5 @@ public class HealthMonitor {
       }
       return statuses;
    }
+
 }

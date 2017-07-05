@@ -9,7 +9,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -18,8 +17,6 @@ import org.jboss.modules.ModuleLoader;
  * Add dependencies required by deployment unit to access the Config API (programmatically or using CDI).
  */
 public class DependencyProcessor implements DeploymentUnitProcessor {
-
-    Logger log = Logger.getLogger(SubsystemDeploymentProcessor.class);
 
     /**
      * See {@link Phase} for a description of the different phases

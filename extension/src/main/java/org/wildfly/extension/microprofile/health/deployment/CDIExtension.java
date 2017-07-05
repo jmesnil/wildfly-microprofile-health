@@ -74,7 +74,7 @@ public class CDIExtension implements Extension {
                HealthCheckProcedure healthCheckProcedure = HealthCheckProcedure.class.cast(bean);
                System.out.println(">> Added health bean impl " + bean);
                // TODO remove the health check procedure when the deployment is undeployed
-               healthMonitor.addHealthChechProcedure(healthCheckProcedure);
+               healthMonitor.addHealthCheckProcedure(healthCheckProcedure);
             }
          }
 

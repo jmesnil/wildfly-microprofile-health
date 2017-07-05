@@ -22,8 +22,7 @@
 
 package org.wildfly.swarm.microprofile.config.health.checks;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
+import java.util.Random;
 
 import javax.enterprise.context.Dependent;
 
@@ -35,19 +34,14 @@ import org.eclipse.microprofile.health.HealthStatus;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 @Dependent
-public class MemoryHealthCheck implements HealthCheckProcedure {
+public class RandomHealthCheck implements HealthCheckProcedure {
 
+   private final Random random = new Random();
    @Override
    public HealthStatus perform() {
-      System.out.println("MemoryHealthCheck.perform");
-      MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-      long memUsed = memoryBean.getHeapMemoryUsage().getUsed();
-      long memMax = memoryBean.getHeapMemoryUsage().getMax();
-      HealthResponse response = HealthResponse.named("heap-memory")
-              .withAttribute("used", memUsed)
-              .withAttribute("max", memMax);
-      HealthStatus status = (memUsed < memMax * 0.8) ? response.up() : response.down();
-      System.out.println("status = " + status);
+      HealthResponse response = HealthResponse.named("random")
+              .withAttribute("foo", "bar");
+      HealthStatus status = (random.nextInt(3) < 2) ? response.up() : response.down();
       return status;
    }
 }

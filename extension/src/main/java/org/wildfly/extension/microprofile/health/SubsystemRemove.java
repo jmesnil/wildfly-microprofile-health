@@ -20,9 +20,10 @@ class SubsystemRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        HealthCheck.uninstall(context, "heap-memory");
         context.removeService(HealthHttpHandlerService.SERVICE_NAME);
-
         context.removeService(HealthMonitorService.SERVICE_NAME);
+
     }
 
 
