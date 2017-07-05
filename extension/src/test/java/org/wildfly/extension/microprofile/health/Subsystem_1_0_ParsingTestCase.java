@@ -28,6 +28,13 @@ public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
         return "schema/microprofile-health-extension_1_0.xsd";
     }
 
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/microprofile-health.xml"
+        };
+    }
+
     protected Properties getResolvedProperties() {
         return System.getProperties();
     }

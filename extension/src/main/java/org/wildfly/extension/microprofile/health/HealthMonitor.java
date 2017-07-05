@@ -22,32 +22,30 @@
 
 package org.wildfly.extension.microprofile.health;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+import java.util.Collection;
+import java.util.HashSet;
 
-import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentResourceXMLParser;
+import org.eclipse.microprofile.health.HealthCheckProcedure;
+import org.eclipse.microprofile.health.HealthStatus;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-public class SubsytemParser_1_0  extends PersistentResourceXMLParser {
-    /**
-     * The name space used for the {@code subsystem} element
-     */
-    public static final String NAMESPACE = "urn:wildfly:microprofile-health:1.0";
+public class HealthMonitor {
+   public static HealthMonitor INSTANCE = new HealthMonitor();
 
-    static final PersistentResourceXMLParser INSTANCE = new SubsytemParser_1_0();
+   final Collection<HealthCheckProcedure> procedures = new HashSet<>();
 
-    private static final PersistentResourceXMLDescription xmlDescription;
+   public void addHealthChechProcedure(HealthCheckProcedure procedure) {
+      procedures.add(procedure);
+   }
 
-    static {
-        xmlDescription = builder(new SubsystemDefinition(), NAMESPACE)
-                .addAttribute(SubsystemDefinition.HTTP_ENDPOINT)
-                .build();
-    }
-
-    @Override
-    public PersistentResourceXMLDescription getParserDescription() {
-        return xmlDescription;
-    }
+   Collection<HealthStatus> check() {
+      // TODO perform health check concurrently
+      Collection<HealthStatus> statuses = new HashSet<>();
+      for (HealthCheckProcedure procedure : procedures) {
+         statuses.add(procedure.perform());
+      }
+      return statuses;
+   }
 }

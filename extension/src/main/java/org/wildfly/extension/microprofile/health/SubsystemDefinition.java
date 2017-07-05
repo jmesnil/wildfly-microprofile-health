@@ -1,16 +1,25 @@
 package org.wildfly.extension.microprofile.health;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tcerar@redhat.com">Tomaz Cerar</a>
  */
 public class SubsystemDefinition extends PersistentResourceDefinition {
+    static AttributeDefinition HTTP_ENDPOINT = SimpleAttributeDefinitionBuilder.create("http-endpoint", ModelType.STRING)
+            .setAllowNull(true)
+            .setRestartAllServices()
+            .build();
+
+    static AttributeDefinition[] ATTRIBUTES = { HTTP_ENDPOINT };
+
     protected SubsystemDefinition() {
         super(SubsystemExtension.SUBSYSTEM_PATH,
                 SubsystemExtension.getResourceDescriptionResolver(SubsystemExtension.SUBSYSTEM_NAME),
@@ -22,17 +31,13 @@ public class SubsystemDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.emptySet();
+        return Arrays.asList(ATTRIBUTES);
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        //you can register aditional operations here
-    }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        //you can register attributes here
+        resourceRegistration.registerOperationHandler(CheckOperation.DEFINITION, new CheckOperation());
     }
 }

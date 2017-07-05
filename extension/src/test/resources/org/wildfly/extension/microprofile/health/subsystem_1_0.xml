@@ -1,1 +1,1 @@
-<subsystem xmlns="urn:wildfly:microprofile-health:1.0" />
+<subsystem xmlns="urn:wildfly:microprofile-health:1.0" http-endpoint="/health"/>

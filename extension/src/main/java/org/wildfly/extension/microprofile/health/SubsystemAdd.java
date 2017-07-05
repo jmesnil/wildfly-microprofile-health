@@ -19,14 +19,7 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
     static final SubsystemAdd INSTANCE = new SubsystemAdd();
 
     private SubsystemAdd() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
+        super(SubsystemDefinition.ATTRIBUTES);
     }
 
     /**
@@ -36,6 +29,11 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         MicroProfileHealthLogger.ROOT_LOGGER.activatingSubsystem();
+
+        ModelNode httpEndpoint = SubsystemDefinition.HTTP_ENDPOINT.resolveModelAttribute(context, model);
+        if (httpEndpoint.isDefined()) {
+            HealthHttpHandlerService.install(context, httpEndpoint.asString());
+        }
 
         //Add deployment processors here
         //Remove this if you don't need to hook into the deployers, or you can add as many as you like

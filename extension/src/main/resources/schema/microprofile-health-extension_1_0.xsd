@@ -8,6 +8,7 @@
     <!-- The subsystem root element -->
     <xs:element name="subsystem">
         <xs:complexType>
+            <xs:attribute name="http-endpoint" use="optional" />
         </xs:complexType>
     </xs:element>
 </xs:schema>

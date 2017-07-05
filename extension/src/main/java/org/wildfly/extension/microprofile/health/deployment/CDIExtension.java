@@ -39,6 +39,7 @@ import javax.resource.spi.ConfigProperty;
 
 import org.eclipse.microprofile.health.HealthCheckProcedure;
 import org.eclipse.microprofile.health.HealthStatus;
+import org.wildfly.extension.microprofile.health.HealthMonitor;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
@@ -70,11 +71,8 @@ public class CDIExtension implements Extension {
                Object bean = iterator.next().create(null); // FIXME
                HealthCheckProcedure healthCheckProcedure = HealthCheckProcedure.class.cast(bean);
                System.out.println(">> Added health bean impl " + bean);
-               HealthStatus status = healthCheckProcedure.perform();
-               System.out.println("status = " + status);
-               System.out.println("-- name = " + status.getName());
-               System.out.println("-- status = " + status.getState());
-               System.out.println("-- attributes = " + status.getAttributes());
+               // TODO remove the health check procedure when the deployment is undeployed
+               HealthMonitor.INSTANCE.addHealthChechProcedure(healthCheckProcedure);
             }
          }
 

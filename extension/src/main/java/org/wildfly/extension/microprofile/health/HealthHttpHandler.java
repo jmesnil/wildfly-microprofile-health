@@ -22,32 +22,34 @@
 
 package org.wildfly.extension.microprofile.health;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+import java.util.Collection;
 
-import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentResourceXMLParser;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.Headers;
+import org.eclipse.microprofile.health.HealthStatus;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-public class SubsytemParser_1_0  extends PersistentResourceXMLParser {
-    /**
-     * The name space used for the {@code subsystem} element
-     */
-    public static final String NAMESPACE = "urn:wildfly:microprofile-health:1.0";
+public class HealthHttpHandler implements HttpHandler {
 
-    static final PersistentResourceXMLParser INSTANCE = new SubsytemParser_1_0();
+   private final HealthMonitor monitor;
 
-    private static final PersistentResourceXMLDescription xmlDescription;
+   HealthHttpHandler(HealthMonitor monitor) {
+      this.monitor = monitor;
+   }
 
-    static {
-        xmlDescription = builder(new SubsystemDefinition(), NAMESPACE)
-                .addAttribute(SubsystemDefinition.HTTP_ENDPOINT)
-                .build();
-    }
+   @Override
+   public void handleRequest(HttpServerExchange exchange) throws Exception {
+      System.out.println("HealthHttpHandler.handleRequest");
+      Collection<HealthStatus> statuses = monitor.check();
+      System.out.println("statuses = " + statuses);
+      ModelNode result = CheckOperation.computeResult(statuses);
+      System.out.println("result = " + result.toJSONString(false));
+      exchange.getResponseHeaders().add(Headers.CONTENT_TYPE, "application/json");
+      exchange.getResponseSender().send(result.toJSONString(true));
+   }
 
-    @Override
-    public PersistentResourceXMLDescription getParserDescription() {
-        return xmlDescription;
-    }
 }
