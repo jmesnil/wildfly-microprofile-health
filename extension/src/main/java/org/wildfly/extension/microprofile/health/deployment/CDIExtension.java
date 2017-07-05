@@ -23,18 +23,22 @@
 package org.wildfly.extension.microprofile.health.deployment;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PreDestroy;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
-import javax.resource.spi.ConfigProperty;
 
 import org.eclipse.microprofile.health.HealthCheckProcedure;
 import org.wildfly.extension.microprofile.health.HealthMonitor;
@@ -45,25 +49,20 @@ import org.wildfly.extension.microprofile.health.HealthMonitor;
 public class CDIExtension implements Extension {
 
    private final HealthMonitor healthMonitor;
-   private List<AnnotatedType> delegates = new ArrayList<>();
+   private List<AnnotatedType<? extends HealthCheckProcedure>> delegates = new ArrayList<>();
+   private Collection<HealthCheckProcedure> procedures = new ArrayList<>();
 
    public CDIExtension(HealthMonitor healthMonitor) {
       this.healthMonitor = healthMonitor;
    }
 
-   public <T> void observeResources(@Observes ProcessAnnotatedType<T> event) {
-
-      AnnotatedType<T> annotatedType = event.getAnnotatedType();
-      Class<T> javaClass = annotatedType.getJavaClass();
-      for (Class<?> intf : javaClass.getInterfaces()) {
-         if (intf.getName().equals(HealthCheckProcedure.class.getName())) {
-            System.out.println(">> Discovered health check procedure " + javaClass);
-            delegates.add(annotatedType);
-         }
-      }
+   public void observeResources(@Observes ProcessAnnotatedType<? extends HealthCheckProcedure> event) {
+      AnnotatedType<? extends HealthCheckProcedure> annotatedType = event.getAnnotatedType();
+      Class<? extends HealthCheckProcedure> javaClass = annotatedType.getJavaClass();
+      System.out.println(">> Discovered health check procedure " + javaClass);
+      delegates.add(annotatedType);
    }
 
-   @ConfigProperty
    private void afterBeanDiscovery(@Observes final AfterBeanDiscovery abd, BeanManager beanManager) {
       try {
          for (AnnotatedType delegate : delegates) {
@@ -73,6 +72,7 @@ public class CDIExtension implements Extension {
                Object bean = iterator.next().create(null); // FIXME
                HealthCheckProcedure healthCheckProcedure = HealthCheckProcedure.class.cast(bean);
                System.out.println(">> Added health bean impl " + bean);
+               procedures.add(healthCheckProcedure);
                // TODO remove the health check procedure when the deployment is undeployed
                healthMonitor.addHealthCheckProcedure(healthCheckProcedure);
             }
@@ -81,5 +81,14 @@ public class CDIExtension implements Extension {
       } catch (Exception e) {
          throw new RuntimeException("Failed to register health bean", e);
       }
+   }
+
+   public void close() {
+      System.out.println(">>>>>>>> CDIExtension.close");
+      System.out.println("healthMonitor = " + healthMonitor);
+      for (HealthCheckProcedure procedure : procedures) {
+         healthMonitor.removeHealthCheckProcedure(procedure);
+      }
+      procedures.clear();
    }
 }

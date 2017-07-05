@@ -60,6 +60,7 @@
         <module>extension</module>
         <module>feature-pack</module>
         <module>dist</module>
+        <module>tck</module>
         <module>examples</module>
     </modules>
 
@@ -74,6 +75,12 @@
                 <groupId>org.eclipse.microprofile.apis</groupId>
                 <artifactId>microprofile-health-api</artifactId>
                 <version>${version.eclipse.microprofile.health}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.health.tck</groupId>
+                <artifactId>microprofile-health-tck</artifactId>
+                <version>${version.eclipse.microprofile.health}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logging</groupId>

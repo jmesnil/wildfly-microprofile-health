@@ -49,6 +49,7 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
             HealthHttpHandlerService.install(context, serverName, vHostName, path.asString());
         }
 
+        /*
         HealthCheck.install(context, "heap-memory", () -> {
             MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
             long memUsed = memoryBean.getHeapMemoryUsage().getUsed();
@@ -60,6 +61,7 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
             HealthStatus status = (memUsed < memMax * 0.9) ? response.up() : response.down();
             return status;
         });
+        */
 
         //Add deployment processors here
         //Remove this if you don't need to hook into the deployers, or you can add as many as you like
