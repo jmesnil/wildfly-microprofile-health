@@ -53,6 +53,7 @@ public class CheckOperation implements OperationStepHandler {
    public static ModelNode computeResult(Collection<HealthStatus> statuses) {
       ModelNode result = new ModelNode();
       boolean globalOutcome = true;
+      result.get("checks").setEmptyList();
       for (HealthStatus status : statuses) {
          ModelNode statusNode = new ModelNode();
          statusNode.get("id").set(status.getName());

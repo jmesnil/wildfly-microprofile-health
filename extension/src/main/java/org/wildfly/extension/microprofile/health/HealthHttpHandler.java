@@ -50,7 +50,14 @@ public class HealthHttpHandler implements HttpHandler {
       System.out.println("result = " + result.toJSONString(false));
       exchange.getResponseHeaders().add(Headers.CONTENT_TYPE, "application/json");
       boolean ok = result.get("outcome").asString() == "UP";
-      exchange.setStatusCode(ok ? 200 : 503)
+      boolean withChecks = result.get("checks").asList().size() > 0;
+      final int statusCode;
+      if (ok) {
+         statusCode = withChecks ? 200 : 204;
+      } else {
+         statusCode = 503;
+      }
+      exchange.setStatusCode(statusCode)
               .getResponseSender().send(result.toJSONString(true));
    }
 
