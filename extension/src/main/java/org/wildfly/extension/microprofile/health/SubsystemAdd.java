@@ -49,6 +49,8 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
             HealthHttpHandlerService.install(context, serverName, vHostName, path.asString());
         }
 
+        DeploymentCheckService.install(context);
+
         /*
         HealthCheck.install(context, "heap-memory", () -> {
             MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();

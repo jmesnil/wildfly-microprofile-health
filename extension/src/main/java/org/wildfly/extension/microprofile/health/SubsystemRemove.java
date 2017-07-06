@@ -23,7 +23,7 @@ class SubsystemRemove extends AbstractRemoveStepHandler {
         HealthCheck.uninstall(context, "heap-memory");
         context.removeService(HealthHttpHandlerService.SERVICE_NAME);
         context.removeService(HealthMonitorService.SERVICE_NAME);
-
+        DeploymentCheckService.uninstall(context);
     }
 
 
