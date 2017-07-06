@@ -24,21 +24,17 @@ package org.wildfly.extension.microprofile.health.deployment;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeShutdown;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import javax.enterprise.inject.spi.Unmanaged;
+import javax.enterprise.inject.spi.Unmanaged.UnmanagedInstance;
 
 import org.eclipse.microprofile.health.HealthCheckProcedure;
 import org.wildfly.extension.microprofile.health.HealthMonitor;
@@ -51,6 +47,7 @@ public class CDIExtension implements Extension {
    private final HealthMonitor healthMonitor;
    private List<AnnotatedType<? extends HealthCheckProcedure>> delegates = new ArrayList<>();
    private Collection<HealthCheckProcedure> procedures = new ArrayList<>();
+   private Collection<UnmanagedInstance<HealthCheckProcedure>> procedureInstances = new ArrayList<>();
 
    public CDIExtension(HealthMonitor healthMonitor) {
       this.healthMonitor = healthMonitor;
@@ -63,32 +60,25 @@ public class CDIExtension implements Extension {
       delegates.add(annotatedType);
    }
 
-   private void afterBeanDiscovery(@Observes final AfterBeanDiscovery abd, BeanManager beanManager) {
-      try {
-         for (AnnotatedType delegate : delegates) {
-            Set<Bean<?>> beans = beanManager.getBeans(delegate.getBaseType());
-            Iterator<Bean<?>> iterator = beans.iterator();
-            while (iterator.hasNext()) {
-               Object bean = iterator.next().create(null); // FIXME
-               HealthCheckProcedure healthCheckProcedure = HealthCheckProcedure.class.cast(bean);
-               System.out.println(">> Added health bean impl " + bean);
-               procedures.add(healthCheckProcedure);
-               // TODO remove the health check procedure when the deployment is undeployed
-               healthMonitor.addHealthCheckProcedure(healthCheckProcedure);
-            }
+   private void afterBeanDiscovery(@Observes final AfterBeanDiscovery abd, BeanManager bm) {
+      for (AnnotatedType delegate : delegates) {
+         try {
+            Unmanaged<HealthCheckProcedure> unmanagedProcedure = new Unmanaged<HealthCheckProcedure>(bm, delegate.getJavaClass());
+            UnmanagedInstance<HealthCheckProcedure> procedureInstance = unmanagedProcedure.newInstance();
+            HealthCheckProcedure procedure =  procedureInstance.produce().inject().postConstruct().get();
+            procedures.add(procedure);
+            procedureInstances.add(procedureInstance);
+            healthMonitor.addHealthCheckProcedure(procedure);
+         } catch (Exception e) {
+            throw new RuntimeException("Failed to register health bean", e);
          }
-
-      } catch (Exception e) {
-         throw new RuntimeException("Failed to register health bean", e);
       }
    }
 
-   public void close() {
-      System.out.println(">>>>>>>> CDIExtension.close");
-      System.out.println("healthMonitor = " + healthMonitor);
-      for (HealthCheckProcedure procedure : procedures) {
-         healthMonitor.removeHealthCheckProcedure(procedure);
-      }
+   public void close(@Observes final BeforeShutdown bs) {
+      procedures.forEach(procedure -> healthMonitor.removeHealthCheckProcedure(procedure));
       procedures.clear();
+      procedureInstances.forEach(instance -> instance.preDestroy().dispose());
+      procedureInstances.clear();
    }
 }
