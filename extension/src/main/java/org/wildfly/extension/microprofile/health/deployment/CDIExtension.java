@@ -53,6 +53,9 @@ public class CDIExtension implements Extension {
       this.healthMonitor = healthMonitor;
    }
 
+   /**
+    * Discover all classes that implements HealthCheckProcedure
+    */
    public void observeResources(@Observes ProcessAnnotatedType<? extends HealthCheckProcedure> event) {
       AnnotatedType<? extends HealthCheckProcedure> annotatedType = event.getAnnotatedType();
       Class<? extends HealthCheckProcedure> javaClass = annotatedType.getJavaClass();
@@ -60,6 +63,11 @@ public class CDIExtension implements Extension {
       delegates.add(annotatedType);
    }
 
+   /**
+    * Instantiates <em>unmanaged instances</em> of HealthCheckProcedure and
+    * handle manually their CDI creation lifecycle.
+    * Add them to the {@link HealthMonitor}.
+    */
    private void afterBeanDiscovery(@Observes final AfterBeanDiscovery abd, BeanManager bm) {
       for (AnnotatedType delegate : delegates) {
          try {
@@ -75,6 +83,12 @@ public class CDIExtension implements Extension {
       }
    }
 
+   /**
+    * Called when the deployment is undeployed.
+    *
+    * Remove all the instances of {@link HealthCheckProcedure} from the {@link HealthMonitor}.
+    * Handle manually their CDI destroy lifecycle.
+    */
    public void close(@Observes final BeforeShutdown bs) {
       procedures.forEach(procedure -> healthMonitor.removeHealthCheckProcedure(procedure));
       procedures.clear();
