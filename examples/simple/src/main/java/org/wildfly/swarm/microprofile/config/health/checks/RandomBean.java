@@ -22,27 +22,20 @@
 
 package org.wildfly.swarm.microprofile.config.health.checks;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
+import java.util.Random;
 
-import org.eclipse.microprofile.health.HealthCheckProcedure;
-import org.eclipse.microprofile.health.HealthResponse;
-import org.eclipse.microprofile.health.HealthStatus;
+import javax.enterprise.context.Dependent;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 @Dependent
-public class RandomHealthCheck implements HealthCheckProcedure {
+public class RandomBean {
 
-   @Inject
-   RandomBean bean;
+   private final Random rand = new Random();
 
-   @Override
-   public HealthStatus perform() {
-      HealthResponse response = HealthResponse.named("random")
-              .withAttribute("foo", "bar");
-      HealthStatus status = (bean.nextInt() < 8) ? response.up() : response.down();
-      return status;
+   int nextInt() {
+      return rand.nextInt(10);
    }
+
 }
