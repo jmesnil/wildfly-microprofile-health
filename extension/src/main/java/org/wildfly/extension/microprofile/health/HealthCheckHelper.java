@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.microprofile.health;
 
-import org.eclipse.microprofile.health.HealthCheckProcedure;
+import org.eclipse.microprofile.health.HealthCheck;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -34,17 +34,17 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-public class HealthCheck {
+public class HealthCheckHelper {
 
    private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("eclipse", "microprofile", "health", "checks");
 
 
-   public static void install(OperationContext context, String name, HealthCheckProcedure procedure) {
-      install(context, ServiceName.of(name), procedure);
+   public static void install(OperationContext context, String name, HealthCheck healthCheck) {
+      install(context, ServiceName.of(name), healthCheck);
    }
 
-   public static void install(OperationContext context, ServiceName suffix, HealthCheckProcedure procedure) {
-      HealthCheckService service = new HealthCheckService(procedure);
+   public static void install(OperationContext context, ServiceName suffix, HealthCheck healthCheck) {
+      HealthCheckService service = new HealthCheckService(healthCheck);
       context.getServiceTarget().addService(BASE_SERVICE_NAME.append(suffix), service)
               .addDependency(HealthMonitorService.SERVICE_NAME, HealthMonitor.class, service.healthMonitor)
               .install();
@@ -58,29 +58,29 @@ public class HealthCheck {
       context.removeService(BASE_SERVICE_NAME.append(suffix));
    }
 
-   private static class HealthCheckService implements Service<HealthCheckProcedure> {
+   private static class HealthCheckService implements Service<HealthCheck> {
 
       private final InjectedValue<HealthMonitor> healthMonitor = new InjectedValue<>();
 
-      private final HealthCheckProcedure procedure;
+      private final HealthCheck healthCheck;
 
-      private HealthCheckService(HealthCheckProcedure procedure) {
-         this.procedure = procedure;
+      private HealthCheckService(HealthCheck healthCheck) {
+         this.healthCheck = healthCheck;
       }
 
       @Override
       public void start(StartContext startContext) throws StartException {
-         healthMonitor.getValue().addHealthCheckProcedure(procedure);
+         healthMonitor.getValue().addHealthCheck(healthCheck);
       }
 
       @Override
       public void stop(StopContext stopContext) {
-         healthMonitor.getValue().removeHealthCheckProcedure(procedure);
+         healthMonitor.getValue().removeHealthCheck(healthCheck);
       }
 
       @Override
-      public HealthCheckProcedure getValue() throws IllegalStateException, IllegalArgumentException {
-         return procedure;
+      public org.eclipse.microprofile.health.HealthCheck getValue() throws IllegalStateException, IllegalArgumentException {
+         return healthCheck;
       }
    }
 }

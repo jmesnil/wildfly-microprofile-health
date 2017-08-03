@@ -24,11 +24,13 @@
 
 <module xmlns="urn:jboss:module:1.5" name="org.eclipse.microprofile.health.api">
     <resources>
-        <artifact name="${org.eclipse.microprofile.apis:microprofile-health-api}"/>
+        <artifact name="${org.eclipse.microprofile.health:microprofile-health-api}"/>
     </resources>
 
     <dependencies>
         <module name="javax.enterprise.api" />
         <module name="javax.ws.rs.api" />
+        <!-- this reverse dependency is required so that the Health module can load services from the extension -->
+        <module name="org.wildfly.extension.microprofile.health" services="import" optional="true" />
     </dependencies>
 </module>

@@ -72,7 +72,7 @@
                 <version>${version.javax.javaee-api}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.microprofile.apis</groupId>
+                <groupId>org.eclipse.microprofile.health</groupId>
                 <artifactId>microprofile-health-api</artifactId>
                 <version>${version.eclipse.microprofile.health}</version>
             </dependency>

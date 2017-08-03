@@ -22,14 +22,14 @@
 
 package org.wildfly.extension.microprofile.health;
 
-import static org.eclipse.microprofile.health.HealthStatus.State.UP;
+import static org.eclipse.microprofile.health.Response.State.UP;
 import static org.wildfly.extension.microprofile.health.SubsystemExtension.SUBSYSTEM_NAME;
 import static org.wildfly.extension.microprofile.health.SubsystemExtension.getResourceDescriptionResolver;
 
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.microprofile.health.HealthStatus;
+import org.eclipse.microprofile.health.Response;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -50,24 +50,24 @@ public class CheckOperation implements OperationStepHandler {
            .setReplyValueType(ModelType.OBJECT)
            .build();
 
-   public static ModelNode computeResult(Collection<HealthStatus> statuses) {
+   public static ModelNode computeResult(Collection<Response> statuses) {
       ModelNode result = new ModelNode();
       boolean globalOutcome = true;
       result.get("checks").setEmptyList();
-      for (HealthStatus status : statuses) {
-         ModelNode statusNode = new ModelNode();
-         statusNode.get("id").set(status.getName());
-         HealthStatus.State state = status.getState();
+      for (Response status : statuses) {
+         ModelNode responseNode = new ModelNode();
+         responseNode.get("id").set(status.getName());
+         Response.State state = status.getState();
          globalOutcome = globalOutcome & state == UP;
-         statusNode.get("result").set(state.toString());
+         responseNode.get("result").set(state.toString());
          if (status.getAttributes().isPresent()) {
-            statusNode.get("data").setEmptyObject();
+            responseNode.get("data").setEmptyObject();
             Map<String, Object> attributes = status.getAttributes().get();
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-               statusNode.get("data").get(entry.getKey()).set(entry.getValue().toString());
+               responseNode.get("data").get(entry.getKey()).set(entry.getValue().toString());
             }
          }
-         result.get("checks").add(statusNode);
+         result.get("checks").add(responseNode);
       }
       result.get("outcome").set(globalOutcome ? "UP" : "DOWN");
       return result;
@@ -78,8 +78,8 @@ public class CheckOperation implements OperationStepHandler {
       ServiceController<?> healthMonitorService = operationContext.getServiceRegistry(false).getRequiredService(HealthMonitorService.SERVICE_NAME);
       HealthMonitor healthMonitor = HealthMonitor.class.cast(healthMonitorService.getValue());
 
-      Collection<HealthStatus> statuses = healthMonitor.check();
-      ModelNode result = computeResult(statuses);
+      Collection<Response> responses = healthMonitor.check();
+      ModelNode result = computeResult(responses);
       operationContext.getResult().set(result);
    }
 }

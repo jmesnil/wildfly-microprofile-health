@@ -4,18 +4,12 @@ import static org.wildfly.extension.microprofile.health.SubsystemDefinition.HTTP
 import static org.wildfly.extension.microprofile.health.SubsystemDefinition.HTTP_SERVER;
 import static org.wildfly.extension.microprofile.health.SubsystemDefinition.HTTP_VIRTUAL_HOST;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-
-import org.eclipse.microprofile.health.HealthResponse;
-import org.eclipse.microprofile.health.HealthStatus;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.microprofile.health.deployment.DependencyProcessor;
 import org.wildfly.extension.microprofile.health.deployment.SubsystemDeploymentProcessor;
 
@@ -49,17 +43,18 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
             HealthHttpHandlerService.install(context, serverName, vHostName, path.asString());
         }
 
+
         /*
-        HealthCheck.install(context, "heap-memory", () -> {
+        HealthCheckHelper.install(context, "heap-memory", () -> {
             MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
             long memUsed = memoryBean.getHeapMemoryUsage().getUsed();
             long memMax = memoryBean.getHeapMemoryUsage().getMax();
-            HealthResponse response = HealthResponse.named("heap-memory")
+            Response response = Response.named("heap-memory")
                     .withAttribute("used", memUsed)
-                    .withAttribute("max", memMax);
-            // status is is down is used memory is greater than 90% of max memory.
-            HealthStatus status = (memUsed < memMax * 0.9) ? response.up() : response.down();
-            return status;
+                    .withAttribute("max", memMax)
+                    // response is is down is used memory is greater than 90% of max memory.
+                    .state((memUsed < memMax * 0.9) ? true : false);
+            return response;
         });
         */
 
