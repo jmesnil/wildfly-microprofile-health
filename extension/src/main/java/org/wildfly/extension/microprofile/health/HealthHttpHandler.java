@@ -27,7 +27,7 @@ import java.util.Collection;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
-import org.eclipse.microprofile.health.HealthStatus;
+import org.eclipse.microprofile.health.Response;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -44,9 +44,9 @@ public class HealthHttpHandler implements HttpHandler {
    @Override
    public void handleRequest(HttpServerExchange exchange) throws Exception {
       System.out.println("HealthHttpHandler.handleRequest");
-      Collection<HealthStatus> statuses = monitor.check();
-      System.out.println("statuses = " + statuses);
-      ModelNode result = CheckOperation.computeResult(statuses);
+      Collection<Response> responses = monitor.check();
+      System.out.println("responses = " + responses);
+      ModelNode result = CheckOperation.computeResult(responses);
       System.out.println("result = " + result.toJSONString(false));
       exchange.getResponseHeaders().add(Headers.CONTENT_TYPE, "application/json");
       boolean ok = result.get("outcome").asString() == "UP";

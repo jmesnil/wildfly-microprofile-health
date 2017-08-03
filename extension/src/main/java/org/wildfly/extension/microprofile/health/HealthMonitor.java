@@ -25,30 +25,30 @@ package org.wildfly.extension.microprofile.health;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.eclipse.microprofile.health.HealthCheckProcedure;
-import org.eclipse.microprofile.health.HealthStatus;
+import org.eclipse.microprofile.health.HealthCheck;
+import org.eclipse.microprofile.health.Response;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 public class HealthMonitor {
-   final Collection<HealthCheckProcedure> procedures = new HashSet<>();
+   final Collection<HealthCheck> healthChecks = new HashSet<>();
 
-   public void addHealthCheckProcedure(HealthCheckProcedure procedure) {
-      procedures.add(procedure);
+   public void addHealthCheck(HealthCheck healthCheck) {
+      healthChecks.add(healthCheck);
    }
 
-   public void removeHealthCheckProcedure(HealthCheckProcedure procedure) {
-      procedures.remove(procedure);
+   public void removeHealthCheck(HealthCheck healthCheck) {
+      healthChecks.remove(healthCheck);
    }
 
-   Collection<HealthStatus> check() {
+   Collection<Response> check() {
       // TODO perform health check concurrently
-      Collection<HealthStatus> statuses = new HashSet<>();
-      for (HealthCheckProcedure procedure : procedures) {
-         statuses.add(procedure.perform());
+      Collection<Response> responses = new HashSet<>();
+      for (HealthCheck procedure : healthChecks) {
+         responses.add(procedure.call());
       }
-      return statuses;
+      return responses;
    }
 
 }

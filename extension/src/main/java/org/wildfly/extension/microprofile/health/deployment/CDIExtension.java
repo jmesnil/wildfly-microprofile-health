@@ -36,7 +36,7 @@ import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.inject.spi.Unmanaged;
 import javax.enterprise.inject.spi.Unmanaged.UnmanagedInstance;
 
-import org.eclipse.microprofile.health.HealthCheckProcedure;
+import org.eclipse.microprofile.health.HealthCheck;
 import org.wildfly.extension.microprofile.health.HealthMonitor;
 
 /**
@@ -45,9 +45,9 @@ import org.wildfly.extension.microprofile.health.HealthMonitor;
 public class CDIExtension implements Extension {
 
    private final HealthMonitor healthMonitor;
-   private List<AnnotatedType<? extends HealthCheckProcedure>> delegates = new ArrayList<>();
-   private Collection<HealthCheckProcedure> procedures = new ArrayList<>();
-   private Collection<UnmanagedInstance<HealthCheckProcedure>> procedureInstances = new ArrayList<>();
+   private List<AnnotatedType<? extends HealthCheck>> delegates = new ArrayList<>();
+   private Collection<HealthCheck> healthChecks = new ArrayList<>();
+   private Collection<UnmanagedInstance<HealthCheck>> healthCheckInstances = new ArrayList<>();
 
    public CDIExtension(HealthMonitor healthMonitor) {
       this.healthMonitor = healthMonitor;
@@ -56,9 +56,9 @@ public class CDIExtension implements Extension {
    /**
     * Discover all classes that implements HealthCheckProcedure
     */
-   public void observeResources(@Observes ProcessAnnotatedType<? extends HealthCheckProcedure> event) {
-      AnnotatedType<? extends HealthCheckProcedure> annotatedType = event.getAnnotatedType();
-      Class<? extends HealthCheckProcedure> javaClass = annotatedType.getJavaClass();
+   public void observeResources(@Observes ProcessAnnotatedType<? extends HealthCheck> event) {
+      AnnotatedType<? extends HealthCheck> annotatedType = event.getAnnotatedType();
+      Class<? extends HealthCheck> javaClass = annotatedType.getJavaClass();
       System.out.println(">> Discovered health check procedure " + javaClass);
       delegates.add(annotatedType);
    }
@@ -71,12 +71,12 @@ public class CDIExtension implements Extension {
    private void afterBeanDiscovery(@Observes final AfterBeanDiscovery abd, BeanManager bm) {
       for (AnnotatedType delegate : delegates) {
          try {
-            Unmanaged<HealthCheckProcedure> unmanagedProcedure = new Unmanaged<HealthCheckProcedure>(bm, delegate.getJavaClass());
-            UnmanagedInstance<HealthCheckProcedure> procedureInstance = unmanagedProcedure.newInstance();
-            HealthCheckProcedure procedure =  procedureInstance.produce().inject().postConstruct().get();
-            procedures.add(procedure);
-            procedureInstances.add(procedureInstance);
-            healthMonitor.addHealthCheckProcedure(procedure);
+            Unmanaged<HealthCheck> unmanagedHealthCheck = new Unmanaged<HealthCheck>(bm, delegate.getJavaClass());
+            UnmanagedInstance<HealthCheck> healthCheckInstance = unmanagedHealthCheck.newInstance();
+            HealthCheck healthCheck =  healthCheckInstance.produce().inject().postConstruct().get();
+            healthChecks.add(healthCheck);
+            healthCheckInstances.add(healthCheckInstance);
+            healthMonitor.addHealthCheck(healthCheck);
          } catch (Exception e) {
             throw new RuntimeException("Failed to register health bean", e);
          }
@@ -86,13 +86,13 @@ public class CDIExtension implements Extension {
    /**
     * Called when the deployment is undeployed.
     *
-    * Remove all the instances of {@link HealthCheckProcedure} from the {@link HealthMonitor}.
+    * Remove all the instances of {@link HealthCheck} from the {@link HealthMonitor}.
     * Handle manually their CDI destroy lifecycle.
     */
    public void close(@Observes final BeforeShutdown bs) {
-      procedures.forEach(procedure -> healthMonitor.removeHealthCheckProcedure(procedure));
-      procedures.clear();
-      procedureInstances.forEach(instance -> instance.preDestroy().dispose());
-      procedureInstances.clear();
+      healthChecks.forEach(healthCheck -> healthMonitor.removeHealthCheck(healthCheck));
+      healthChecks.clear();
+      healthCheckInstances.forEach(instance -> instance.preDestroy().dispose());
+      healthCheckInstances.clear();
    }
 }

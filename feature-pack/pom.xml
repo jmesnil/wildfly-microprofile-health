@@ -36,7 +36,7 @@
             <artifactId>wildfly-microprofile-health-extension</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.apis</groupId>
+            <groupId>org.eclipse.microprofile.health</groupId>
             <artifactId>microprofile-health-api</artifactId>
         </dependency>
     </dependencies>
