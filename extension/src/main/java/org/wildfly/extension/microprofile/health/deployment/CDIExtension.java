@@ -35,9 +35,12 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.inject.spi.Unmanaged;
 import javax.enterprise.inject.spi.Unmanaged.UnmanagedInstance;
+import javax.enterprise.inject.spi.WithAnnotations;
 
+import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.wildfly.extension.microprofile.health.HealthMonitor;
+import org.wildfly.extension.microprofile.health.MicroProfileHealthLogger;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
@@ -56,10 +59,10 @@ public class CDIExtension implements Extension {
    /**
     * Discover all classes that implements HealthCheckProcedure
     */
-   public void observeResources(@Observes ProcessAnnotatedType<? extends HealthCheck> event) {
+   public void observeResources(@Observes @WithAnnotations({Health.class})  ProcessAnnotatedType<? extends HealthCheck> event) {
       AnnotatedType<? extends HealthCheck> annotatedType = event.getAnnotatedType();
       Class<? extends HealthCheck> javaClass = annotatedType.getJavaClass();
-      System.out.println(">> Discovered health check procedure " + javaClass);
+      MicroProfileHealthLogger.ROOT_LOGGER.debugf("Discovered health check procedure %s", javaClass);
       delegates.add(annotatedType);
    }
 

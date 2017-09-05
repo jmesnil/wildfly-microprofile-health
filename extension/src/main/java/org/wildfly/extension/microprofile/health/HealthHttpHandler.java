@@ -22,12 +22,14 @@
 
 package org.wildfly.extension.microprofile.health;
 
+import static org.eclipse.microprofile.health.HealthCheckResponse.State.UP;
+
 import java.util.Collection;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
-import org.eclipse.microprofile.health.Response;
+import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,20 +45,12 @@ public class HealthHttpHandler implements HttpHandler {
 
    @Override
    public void handleRequest(HttpServerExchange exchange) throws Exception {
-      System.out.println("HealthHttpHandler.handleRequest");
-      Collection<Response> responses = monitor.check();
-      System.out.println("responses = " + responses);
+      Collection<HealthCheckResponse> responses = monitor.check();
       ModelNode result = CheckOperation.computeResult(responses);
-      System.out.println("result = " + result.toJSONString(false));
+      MicroProfileHealthLogger.ROOT_LOGGER.debugf("checking health check: %s", result.toJSONString(true));
       exchange.getResponseHeaders().add(Headers.CONTENT_TYPE, "application/json");
-      boolean ok = result.get("outcome").asString() == "UP";
-      boolean withChecks = result.get("checks").asList().size() > 0;
-      final int statusCode;
-      if (ok) {
-         statusCode = withChecks ? 200 : 204;
-      } else {
-         statusCode = 503;
-      }
+      boolean ok = result.get("outcome").asString() == UP.toString();
+      final int statusCode = ok ? 200 : 503;
       exchange.setStatusCode(statusCode)
               .getResponseSender().send(result.toJSONString(true));
    }

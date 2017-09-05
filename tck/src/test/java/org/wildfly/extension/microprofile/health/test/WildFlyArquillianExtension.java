@@ -20,30 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.microprofile.health;
+package org.wildfly.extension.microprofile.health.test;
 
-import static org.jboss.logging.Logger.Level.INFO;
-
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.arquillian.container.test.impl.enricher.resource.URIResourceProvider;
+import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-@MessageLogger(projectCode = "EMPHEALTH", length = 4)
-public interface MicroProfileHealthLogger extends BasicLogger {
-    /**
-     * The root logger with a category of the package name.
-     */
-    MicroProfileHealthLogger ROOT_LOGGER = Logger.getMessageLogger(MicroProfileHealthLogger.class, MicroProfileHealthLogger.class.getPackage().getName());
-
-    /**
-     * Logs an informational message indicating the naming subsystem is being activated.
-     */
-    @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating Eclipse MicroProfile Health Subsystem")
-    void activatingSubsystem();
+public class WildFlyArquillianExtension implements LoadableExtension {
+    @Override
+    public void register(ExtensionBuilder extensionBuilder) {
+        extensionBuilder.override(ResourceProvider.class, URIResourceProvider.class, WildFlyURIProvider.class);
+    }
 }

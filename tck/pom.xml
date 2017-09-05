@@ -34,7 +34,7 @@
     </parent>
 
     <artifactId>wildfly-microprofile-health-tck</artifactId>
-    <name>WildFly: MicroProfile Health - WildFly TCK</name>
+    <name>WildFly: MicroProfile Health TCK</name>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -45,7 +45,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.health.tck</groupId>
+            <groupId>org.eclipse.microprofile.health</groupId>
             <artifactId>microprofile-health-tck</artifactId>
             <scope>test</scope>
         </dependency>
@@ -69,11 +69,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <systemPropertyVariables>
-                        <org.eclipse.microprofile.health.tck.url>http://localhost:8080/health</org.eclipse.microprofile.health.tck.url>
-                    </systemPropertyVariables>
                     <dependenciesToScan>
-                        <dependency>org.eclipse.microprofile.health.tck:microprofile-health-tck</dependency>
+                        <dependency>org.eclipse.microprofile.health:microprofile-health-tck</dependency>
                     </dependenciesToScan>
                 </configuration>
             </plugin>

@@ -22,14 +22,14 @@
 
 package org.wildfly.extension.microprofile.health;
 
-import static org.eclipse.microprofile.health.Response.State.UP;
+import static org.eclipse.microprofile.health.HealthCheckResponse.State.UP;
 import static org.wildfly.extension.microprofile.health.SubsystemExtension.SUBSYSTEM_NAME;
 import static org.wildfly.extension.microprofile.health.SubsystemExtension.getResourceDescriptionResolver;
 
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.microprofile.health.Response;
+import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -50,19 +50,19 @@ public class CheckOperation implements OperationStepHandler {
            .setReplyValueType(ModelType.OBJECT)
            .build();
 
-   public static ModelNode computeResult(Collection<Response> statuses) {
+   public static ModelNode computeResult(Collection<HealthCheckResponse> statuses) {
       ModelNode result = new ModelNode();
       boolean globalOutcome = true;
       result.get("checks").setEmptyList();
-      for (Response status : statuses) {
+      for (HealthCheckResponse status : statuses) {
          ModelNode responseNode = new ModelNode();
-         responseNode.get("id").set(status.getName());
-         Response.State state = status.getState();
+         responseNode.get("name").set(status.getName());
+         HealthCheckResponse.State state = status.getState();
          globalOutcome = globalOutcome & state == UP;
-         responseNode.get("result").set(state.toString());
-         if (status.getAttributes().isPresent()) {
+         responseNode.get("state").set(state.toString());
+         if (status.getData().isPresent()) {
             responseNode.get("data").setEmptyObject();
-            Map<String, Object> attributes = status.getAttributes().get();
+            Map<String, Object> attributes = status.getData().get();
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
                responseNode.get("data").get(entry.getKey()).set(entry.getValue().toString());
             }
@@ -78,7 +78,7 @@ public class CheckOperation implements OperationStepHandler {
       ServiceController<?> healthMonitorService = operationContext.getServiceRegistry(false).getRequiredService(HealthMonitorService.SERVICE_NAME);
       HealthMonitor healthMonitor = HealthMonitor.class.cast(healthMonitorService.getValue());
 
-      Collection<Response> responses = healthMonitor.check();
+      Collection<HealthCheckResponse> responses = healthMonitor.check();
       ModelNode result = computeResult(responses);
       operationContext.getResult().set(result);
    }

@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.eclipse.microprofile.health.HealthCheck;
-import org.eclipse.microprofile.health.Response;
+import org.eclipse.microprofile.health.HealthCheckResponse;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
@@ -42,9 +42,9 @@ public class HealthMonitor {
       healthChecks.remove(healthCheck);
    }
 
-   Collection<Response> check() {
+   Collection<HealthCheckResponse> check() {
       // TODO perform health check concurrently
-      Collection<Response> responses = new HashSet<>();
+      Collection<HealthCheckResponse> responses = new HashSet<>();
       for (HealthCheck procedure : healthChecks) {
          responses.add(procedure.call());
       }

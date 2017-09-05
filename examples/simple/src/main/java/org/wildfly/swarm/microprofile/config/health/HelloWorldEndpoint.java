@@ -12,7 +12,6 @@ public class HelloWorldEndpoint {
 	@GET
 	@Produces("text/plain")
 	public String doGet() {
-		System.out.println("HelloWorldEndpoint.doGet");
 		return "Hello, World";
 	}
 }
