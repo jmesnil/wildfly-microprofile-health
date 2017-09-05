@@ -26,82 +26,89 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.eclipse.microprofile.health.Response;
-import org.eclipse.microprofile.health.ResponseBuilder;
-import org.eclipse.microprofile.health.spi.SPIFactory;
+import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
+import org.eclipse.microprofile.health.spi.HealthCheckResponseProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-public class WildFlyResponseFactory implements SPIFactory{
+public class WildFlyResponseFactory implements HealthCheckResponseProvider{
     @Override
-    public ResponseBuilder createResponseBuilder() {
+    public HealthCheckResponseBuilder createResponseBuilder() {
         return new WildFlyResponseBuilder();
     }
 
-    private static class WildFlyResponseBuilder extends ResponseBuilder {
+    private static class WildFlyResponseBuilder extends HealthCheckResponseBuilder {
 
         private String name;
-        private ModelNode attributes = new ModelNode();
+        private boolean state;
+        private ModelNode data = new ModelNode();
 
 
         @Override
-        public ResponseBuilder name(String name) {
+        public HealthCheckResponseBuilder name(String name) {
             this.name = name;
             return this;
         }
 
         @Override
-        public ResponseBuilder withAttribute(String key, String value) {
-            attributes.get(key).set(value);
+        public HealthCheckResponseBuilder withData(String key, String value) {
+            data.get(key).set(value);
             return this;
         }
 
         @Override
-        public ResponseBuilder withAttribute(String key, long value) {
-            attributes.get(key).set(value);
+        public HealthCheckResponseBuilder withData(String key, long value) {
+            data.get(key).set(value);
             return this;
         }
 
         @Override
-        public ResponseBuilder withAttribute(String key, boolean value) {
-            attributes.get(key).set(value);
+        public HealthCheckResponseBuilder withData(String key, boolean value) {
+            data.get(key).set(value);
             return this;
         }
 
         @Override
-        public Response up() {
+        public HealthCheckResponseBuilder up() {
             return state(true);
         }
 
         @Override
-        public Response down() {
+        public HealthCheckResponseBuilder down() {
             return state(false);
         }
 
         @Override
-        public Response state(boolean up) {
-            return new WildFlyResponse(name, up, attributes);
+        public HealthCheckResponseBuilder state(boolean up) {
+            this.state = up;
+            return this;
         }
 
-        private class WildFlyResponse extends Response {
+        @Override
+        public HealthCheckResponse build() {
+            return new WildFlyResponse(this.name, this.state, this.data);
+        }
+
+        private class WildFlyResponse extends HealthCheckResponse {
             private final String name;
             private final boolean up;
-            private final Map<String, Object> attributes;
+            private final Map<String, Object> data;
 
             public WildFlyResponse(String name, boolean up, ModelNode model)
             {
                 this.name = name;
                 this.up = up;
-                this.attributes = setAttributes(model);
+                this.data = setData(model);
             }
 
-            private Map<String,Object> setAttributes(ModelNode model) {
+            private Map<String,Object> setData(ModelNode model) {
                 if (!model.isDefined()) {
                     return null;
                 }
-                Map<String, Object> attributes = new HashMap<>();
+                Map<String, Object> data = new HashMap<>();
                 for (String key : model.keys()) {
                     final ModelNode modelValue = model.get(key);
                     final Object value;
@@ -115,9 +122,9 @@ public class WildFlyResponseFactory implements SPIFactory{
                         default:
                             value = modelValue.asString();
                     }
-                    attributes.put(key, value);
+                    data.put(key, value);
                 }
-                return attributes;
+                return data;
             }
 
             @Override
@@ -131,8 +138,8 @@ public class WildFlyResponseFactory implements SPIFactory{
             }
 
             @Override
-            public Optional<Map<String, Object>> getAttributes() {
-                return Optional.ofNullable(attributes);
+            public Optional<Map<String, Object>> getData() {
+                return Optional.ofNullable(data);
             }
         }
     }

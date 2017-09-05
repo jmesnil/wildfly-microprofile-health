@@ -1,7 +1,6 @@
 package org.wildfly.extension.microprofile.health.deployment;
 
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -9,7 +8,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.microprofile.health.HealthMonitor;
 import org.wildfly.extension.microprofile.health.HealthMonitorService;

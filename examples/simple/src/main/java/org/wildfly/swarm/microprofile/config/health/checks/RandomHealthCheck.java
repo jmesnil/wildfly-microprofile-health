@@ -25,24 +25,25 @@ package org.wildfly.swarm.microprofile.config.health.checks;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
-import org.eclipse.microprofile.health.Response;
-import org.eclipse.microprofile.health.ResponseBuilder;
+import org.eclipse.microprofile.health.HealthCheckResponse;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 @Dependent
+@Health
 public class RandomHealthCheck implements HealthCheck {
 
    @Inject
    RandomBean bean;
 
    @Override
-   public Response call() {
-      ResponseBuilder response = Response.named("random")
-              .withAttribute("foo", "bar");
-      Response status = (bean.nextInt() < 8) ? response.up() : response.down();
-      return status;
+   public HealthCheckResponse call() {
+      return HealthCheckResponse.builder().name("random")
+              .withData("foo", "bar")
+              .state((bean.nextInt() < 8))
+              .build();
    }
 }
