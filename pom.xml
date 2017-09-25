@@ -36,7 +36,7 @@
     <name>WildFly: MicroProfile Health</name>
 
     <properties>
-        <version.eclipse.microprofile.health>1.0.0-RC2</version.eclipse.microprofile.health>
+        <version.eclipse.microprofile.health>1.0</version.eclipse.microprofile.health>
         <version.javax.javaee-api>7.0</version.javax.javaee-api>
         <version.junit>4.11</version.junit>
         <version.org.jboss.logging>2.0.1.Final</version.org.jboss.logging>
