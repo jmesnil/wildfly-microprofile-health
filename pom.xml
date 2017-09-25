@@ -48,10 +48,10 @@
     </properties>
 
     <scm>
-        <connection>scm:git:https://github.com/wildfly-extras/wildfly-microprofile-config.git</connection>
-        <developerConnection>scm:git:https://github.com/wildfly-extras/wildfly-microprofile-config.git</developerConnection>
-        <url>https://github.com/wildfly-extras/wildfly-microprofile-config/</url>
-    </scm>
+        <connection>scm:git:https://github.com/jmesnil/wildfly-microprofile-health.git</connection>
+        <developerConnection>scm:git:https://github.com/jmesnil/wildfly-microprofile-health.git</developerConnection>
+        <url>https://github.com/jmesnil/wildfly-microprofile-health</url>
+  </scm>
 
     <modules>
         <module>extension</module>
