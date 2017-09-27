@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeShutdown;
@@ -71,7 +72,7 @@ public class CDIExtension implements Extension {
     * handle manually their CDI creation lifecycle.
     * Add them to the {@link HealthMonitor}.
     */
-   private void afterBeanDiscovery(@Observes final AfterBeanDiscovery abd, BeanManager bm) {
+   private void afterDeploymentValidation(@Observes final AfterDeploymentValidation avd, BeanManager bm) {
       for (AnnotatedType delegate : delegates) {
          try {
             Unmanaged<HealthCheck> unmanagedHealthCheck = new Unmanaged<HealthCheck>(bm, delegate.getJavaClass());
